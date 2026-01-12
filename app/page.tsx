@@ -29,13 +29,34 @@ export default async function Home()
             maxWidth: '1200px',
             margin: '0 auto',
         }}>
-            <h1 style={{
-                fontSize: '2.5rem',
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 marginBottom: '2rem',
-                color: '#333',
             }}>
-                BookStore
-            </h1>
+                <h1 style={{
+                    fontSize: '2.5rem',
+                    color: '#333',
+                    margin: 0,
+                }}>
+                    BookStore
+                </h1>
+                <a
+                    href="/view-db"
+                    style={{
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '1rem',
+                        backgroundColor: '#0070f3',
+                        color: 'white',
+                        textDecoration: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    Database Viewer
+                </a>
+            </div>
 
             <div style={{
                 marginBottom: '2rem',

@@ -4,22 +4,35 @@ const prisma = new PrismaClient()
 
 async function main()
 {
+    // Create sample user
+    const user = await prisma.user.upsert({
+        where: { email: 'seed@example.com' },
+        update: {},
+        create: {
+            email: 'seed@example.com',
+            name: 'Seed User',
+        },
+    })
+
     // Create sample notes
     const note1 = await prisma.note.create({
         data: {
             title: 'Welcome to BookStore',
+            ownerId: user.id,
         },
     })
 
     const note2 = await prisma.note.create({
         data: {
             title: 'This is a sample note',
+            ownerId: user.id,
         },
     })
 
     const note3 = await prisma.note.create({
         data: {
             title: 'Database connection is working!',
+            ownerId: user.id,
         },
     })
 
