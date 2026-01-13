@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-server'
+import Link from 'next/link'
 
 async function getNotes()
 {
@@ -21,6 +23,7 @@ async function getNotes()
 export default async function Home()
 {
     const notes = await getNotes()
+    const user = await getCurrentUser()
 
     return (
         <main style={{
@@ -42,20 +45,65 @@ export default async function Home()
                 }}>
                     BookStore
                 </h1>
-                <a
-                    href="/view-db"
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        fontSize: '1rem',
-                        backgroundColor: '#0070f3',
-                        color: 'white',
-                        textDecoration: 'none',
-                        borderRadius: '6px',
-                        fontWeight: 'bold',
-                    }}
-                >
-                    Database Viewer
-                </a>
+                <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'center',
+                }}>
+                    {user ? (
+                        <>
+                            <Link
+                                href="/dashboard"
+                                style={{
+                                    padding: '0.75rem 1.5rem',
+                                    fontSize: '1rem',
+                                    backgroundColor: '#10b981',
+                                    color: 'white',
+                                    textDecoration: 'none',
+                                    borderRadius: '6px',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                Личный кабинет
+                            </Link>
+                            <span style={{
+                                fontSize: '0.9rem',
+                                color: '#666',
+                            }}>
+                                {user.name || user.email}
+                            </span>
+                        </>
+                    ) : (
+                        <Link
+                            href="/login"
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                fontSize: '1rem',
+                                backgroundColor: '#4285f4',
+                                color: 'white',
+                                textDecoration: 'none',
+                                borderRadius: '6px',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            Войти
+                        </Link>
+                    )}
+                    <a
+                        href="/view-db"
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            fontSize: '1rem',
+                            backgroundColor: '#0070f3',
+                            color: 'white',
+                            textDecoration: 'none',
+                            borderRadius: '6px',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        Database Viewer
+                    </a>
+                </div>
             </div>
 
             <div style={{

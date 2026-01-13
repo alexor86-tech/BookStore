@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { AuthSessionProvider } from '@/components/providers/session-provider'
 
 export const metadata: Metadata = {
     title: 'BookStore',
@@ -14,7 +15,11 @@ export default function RootLayout({
 {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>
+                <AuthSessionProvider>
+                    {children}
+                </AuthSessionProvider>
+            </body>
         </html>
     )
 }

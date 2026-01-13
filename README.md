@@ -5,6 +5,7 @@ Minimal Next.js (App Router) + Prisma + NeonDB (PostgreSQL) project, ready for V
 ## Tech Stack
 
 - **Next.js 14** (App Router, TypeScript)
+- **Auth.js (NextAuth.js)** - Authentication with Google OAuth
 - **Prisma** (ORM)
 - **NeonDB** (PostgreSQL)
 - **Vercel** (Deployment)
@@ -37,23 +38,15 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory and add required variables. See `ENV_SETUP.md` for detailed instructions.
 
-```bash
-cp .env.example .env
-```
+**Required variables:**
+- `DATABASE_URL` - NeonDB connection string
+- `AUTH_SECRET` - Secret key for Auth.js (generate with `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID` - Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth Client Secret
 
-Edit `.env` and add your NeonDB connection string:
-
-```env
-DATABASE_URL="postgresql://user:password@ep-xxx-xxx.region.aws.neon.tech/dbname?sslmode=require"
-```
-
-**How to get NeonDB connection string:**
-1. Go to [Neon Console](https://console.neon.tech/)
-2. Create a new project (or use existing)
-3. Copy the connection string from the project dashboard
-4. Replace `DATABASE_URL` in `.env` file
+See `ENV_SETUP.md` for detailed setup instructions.
 
 ### 3. Setup Database
 
@@ -91,17 +84,26 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Authentication
+
+The project uses Auth.js (NextAuth.js) with Google OAuth for authentication.
+
+- **Login page**: `/login`
+- **Protected routes**: `/dashboard`, `/my-prompts`
+- **User data**: Automatically created on first login
+- **Session**: Server-side sessions stored in database
+
+See `AUTH.md` for detailed authentication documentation.
+
 ## Database Schema
 
-The project includes a minimal `Note` model:
+The project includes models for:
+- `User` - User accounts (created automatically on OAuth login)
+- `Book` - Books/prompts (linked to users via `ownerId`)
+- `Note` - Notes (linked to users)
+- `Category`, `Tag`, `Vote` - Supporting models
 
-```prisma
-model Note {
-  id        String   @id @default(uuid())
-  title     String
-  createdAt DateTime @default(now())
-}
-```
+See `prisma/schema.prisma` for full schema definition.
 
 ## Deployment to Vercel
 
@@ -120,8 +122,12 @@ git push -u origin main
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click "Add New Project"
 3. Import your GitHub repository
-4. Configure environment variables:
-   - Add `DATABASE_URL` with your NeonDB connection string
+4. Configure environment variables (see `ENV_SETUP.md`):
+   - `DATABASE_URL` - NeonDB connection string
+   - `AUTH_SECRET` - Secret key for Auth.js
+   - `GOOGLE_CLIENT_ID` - Google OAuth Client ID
+   - `GOOGLE_CLIENT_SECRET` - Google OAuth Client Secret
+   - Update Google OAuth redirect URI to include your Vercel domain
 5. Click "Deploy"
 
 ### 3. Run Database Migrations on Vercel
