@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
 // Check if we're in Edge Runtime
-const isEdgeRuntime = typeof EdgeRuntime !== 'undefined' ||
+const isEdgeRuntime = (typeof globalThis !== 'undefined' && 'EdgeRuntime' in globalThis) ||
     (typeof process !== 'undefined' && process.env.NEXT_RUNTIME === 'edge')
 
 const globalForPrisma = globalThis as unknown as {

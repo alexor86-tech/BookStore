@@ -3,6 +3,7 @@ import { getCurrentUser, requireAuth } from "@/lib/auth-server"
 import { prisma } from "@/lib/prisma"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import Link from "next/link"
+import type { Prisma } from "@prisma/client"
 
 /**
  * My Prompts page component
@@ -25,6 +26,11 @@ export default async function MyPromptsPage()
             category: true,
         },
     })
+
+    // Type for book with category
+    type BookWithCategory = Prisma.BookGetPayload<{
+        include: { category: true }
+    }>
 
     return (
         <main style={{
@@ -97,7 +103,7 @@ export default async function MyPromptsPage()
                     display: "grid",
                     gap: "1rem",
                 }}>
-                    {userBooks.map((book) => (
+                    {userBooks.map((book: BookWithCategory) => (
                         <div
                             key={book.id}
                             style={{

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth-server'
 import Link from 'next/link'
+import type { Note } from '@prisma/client'
 
 async function getNotes()
 {
@@ -130,7 +131,7 @@ export default async function Home()
                         display: 'grid',
                         gap: '1rem',
                     }}>
-                        {notes.map((note) => (
+                        {notes.map((note: Note) => (
                             <li
                                 key={note.id}
                                 style={{
