@@ -47,7 +47,7 @@ export async function createBook(data: z.infer<typeof createBookSchema>)
     {
         if (error instanceof z.ZodError)
         {
-            return { success: false, error: error.errors[0].message }
+            return { success: false, error: error.issues[0].message }
         }
         console.error("Error creating book:", error)
         return { success: false, error: "Failed to create book" }
@@ -97,7 +97,7 @@ export async function updateBook(data: z.infer<typeof updateBookSchema>)
     {
         if (error instanceof z.ZodError)
         {
-            return { success: false, error: error.errors[0].message }
+            return { success: false, error: error.issues[0].message }
         }
         console.error("Error updating book:", error)
         return { success: false, error: "Failed to update book" }
