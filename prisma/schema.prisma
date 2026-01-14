@@ -56,20 +56,24 @@ model Book {
     content     String
     description String?
     visibility  Visibility  @default(PRIVATE)
+    isPublic    Boolean     @default(false)
+    isFavorite  Boolean     @default(false)
     createdAt   DateTime    @default(now())
     updatedAt   DateTime    @updatedAt
     publishedAt DateTime?
     ownerId     String
-    categoryId  String
+    categoryId  String?
 
     // Relations
     owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-    category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
     votes       Vote[]
     tags        TagOnBook[]
 
     @@index([ownerId, updatedAt])
     @@index([visibility, createdAt])
+    @@index([isPublic, createdAt])
+    @@index([ownerId, isFavorite])
     @@map("books")
 }
 
