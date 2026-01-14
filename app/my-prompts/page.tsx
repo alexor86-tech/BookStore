@@ -151,8 +151,12 @@ export default async function MyPromptsPage()
                                 fontSize: "0.9rem",
                                 color: "#888",
                             }}>
-                                <span>Категория: {book.category.category}</span>
-                                <span>•</span>
+                                {book.category && (
+                                    <>
+                                        <span>Категория: {book.category.category}</span>
+                                        <span>•</span>
+                                    </>
+                                )}
                                 <span>Обновлено: {new Date(book.updatedAt).toLocaleDateString("ru-RU")}</span>
                             </div>
                         </div>
