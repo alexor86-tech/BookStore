@@ -79,7 +79,7 @@ export function HomeBookCard({ book }: BookCardProps)
             {book.tags && book.tags.length > 0 && (
                 <CardContent>
                     <div className="flex flex-wrap gap-2">
-                        {book.tags.map((tagOnBook) => (
+                        {book.tags.map((tagOnBook: { tag: { id: string; name: string } }) => (
                             <Badge
                                 key={tagOnBook.tag.id}
                                 variant="secondary"

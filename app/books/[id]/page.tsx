@@ -82,7 +82,7 @@ export default async function BookPage({ params }: BookPageProps)
                         <div>
                             <h3 className="text-lg font-semibold mb-2">Теги</h3>
                             <div className="flex flex-wrap gap-2">
-                                {book.tags.map((tagOnBook) => (
+                                {book.tags.map((tagOnBook: { tag: { id: string; name: string } }) => (
                                     <Badge key={tagOnBook.tag.id} variant="secondary">
                                         {tagOnBook.tag.name}
                                     </Badge>
