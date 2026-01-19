@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { toggleFavorite, togglePublic, deleteBook } from "@/lib/actions/books"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { LikeButton } from "@/components/dashboard/like-button"
 
 interface BookCardProps
 {
@@ -21,9 +22,12 @@ interface BookCardProps
             id: string
             name: string | null
         }
+        likesCount?: number
+        likedByMe?: boolean
     }
     currentUserId: string
     onEdit: (book: any) => void
+    showLikeButton?: boolean
 }
 
 /**
@@ -31,7 +35,7 @@ interface BookCardProps
  * @param {BookCardProps} props - Component props
  * @returns {JSX.Element} Book card component
  */
-export function BookCard({ book, currentUserId, onEdit }: BookCardProps)
+export function BookCard({ book, currentUserId, onEdit, showLikeButton = false }: BookCardProps)
 {
     const router = useRouter()
     const [isDeleting, setIsDeleting] = useState(false)
@@ -115,6 +119,15 @@ export function BookCard({ book, currentUserId, onEdit }: BookCardProps)
 
                 {/* Actions */}
                 <div className="flex-shrink-0 flex items-center gap-2">
+                    {/* Like button (only for public books) */}
+                    {showLikeButton && book.isPublic && (
+                        <LikeButton
+                            bookId={book.id}
+                            initialLiked={book.likedByMe || false}
+                            initialCount={book.likesCount || 0}
+                        />
+                    )}
+
                     {/* Favorite toggle */}
                     <Button
                         variant="ghost"

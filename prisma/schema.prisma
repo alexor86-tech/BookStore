@@ -22,6 +22,7 @@ model User {
     notes     Note[]
     books     Book[]
     votes     Vote[]
+    likes     Like[]
     accounts  Account[]
     sessions  Session[]
 
@@ -68,6 +69,7 @@ model Book {
     owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
     category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
     votes       Vote[]
+    likes       Like[]
     tags        TagOnBook[]
 
     @@index([ownerId, updatedAt])
@@ -92,6 +94,21 @@ model Vote {
     @@index([bookId])
     @@index([userId])
     @@map("votes")
+}
+
+model Like {
+    id        String   @id @default(cuid())
+    userId    String
+    bookId    String
+    createdAt DateTime @default(now())
+
+    // Relations
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, bookId])
+    @@index([bookId])
+    @@map("likes")
 }
 
 model Tag {

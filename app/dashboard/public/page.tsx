@@ -9,6 +9,7 @@ interface PublicBooksPageProps
     searchParams: {
         page?: string
         search?: string
+        sort?: "popular" | "recent"
     }
 }
 
@@ -28,7 +29,8 @@ export default async function PublicBooksPage({ searchParams }: PublicBooksPageP
 
     const page = parseInt(searchParams.page || "1", 10)
     const search = searchParams.search || ""
-    const { books, total, totalPages } = await getPublicBooks(page, 10, search)
+    const sort = searchParams.sort === "popular" ? "popular" : "recent"
+    const { books, total, totalPages } = await getPublicBooks(page, 10, search, sort)
 
     return (
         <DashboardLayout user={user}>
@@ -46,6 +48,8 @@ export default async function PublicBooksPage({ searchParams }: PublicBooksPageP
                     currentUserId={user.id}
                     emptyMessage="Публичные книги не найдены"
                     showCreateButton={false}
+                    showLikeButton={true}
+                    sort={sort}
                 />
             </div>
         </DashboardLayout>

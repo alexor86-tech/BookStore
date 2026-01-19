@@ -17,6 +17,8 @@ interface BooksListProps
     currentUserId: string
     emptyMessage?: string
     showCreateButton?: boolean
+    showLikeButton?: boolean
+    sort?: "popular" | "recent"
 }
 
 /**
@@ -32,6 +34,8 @@ export function BooksList({
     currentUserId,
     emptyMessage = "Книги не найдены",
     showCreateButton = true,
+    showLikeButton = false,
+    sort = "recent",
 }: BooksListProps)
 {
     const router = useRouter()
@@ -76,18 +80,45 @@ export function BooksList({
         router.push(`?${params.toString()}`)
     }
 
+    const handleSortChange = (newSort: "popular" | "recent") =>
+    {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("sort", newSort)
+        params.set("page", "1") // Reset to first page when sorting changes
+        router.push(`?${params.toString()}`)
+    }
+
     return (
         <>
             <div className="space-y-4">
-                {/* Search and Create button */}
-                <div className="flex gap-4 items-center">
-                    <div className="flex-1">
+                {/* Search, Sort and Create button */}
+                <div className="flex gap-4 items-center flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
                         <SearchInput
                             value={search}
                             onChange={handleSearchChange}
                             placeholder="Поиск по названию или содержанию..."
                         />
                     </div>
+                    {showLikeButton && (
+                        <div className="flex gap-2 items-center">
+                            <span className="text-sm text-gray-600">Сортировка:</span>
+                            <Button
+                                variant={sort === "popular" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handleSortChange("popular")}
+                            >
+                                По популярности
+                            </Button>
+                            <Button
+                                variant={sort === "recent" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handleSortChange("recent")}
+                            >
+                                По дате
+                            </Button>
+                        </div>
+                    )}
                     {showCreateButton && (
                         <Button onClick={handleCreateClick} className="gap-2">
                             <Plus className="w-4 h-4" />
@@ -110,6 +141,7 @@ export function BooksList({
                                     book={book}
                                     currentUserId={currentUserId}
                                     onEdit={handleEditClick}
+                                    showLikeButton={showLikeButton}
                                 />
                             ))}
                         </div>

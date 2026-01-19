@@ -54,14 +54,21 @@ export async function getUserBooks(page: number = 1, limit: number = 10, search:
 }
 
 /**
- * Get public books with pagination and search
+ * Get public books with pagination, search and sorting
  * @param {number} page - Page number (1-based)
  * @param {number} limit - Items per page
  * @param {string} search - Search query
+ * @param {string} sort - Sort order: "popular" or "recent" (default: "recent")
  * @returns {Promise<{books: any[], total: number, totalPages: number}>} Books data
  */
-export async function getPublicBooks(page: number = 1, limit: number = 10, search: string = "")
+export async function getPublicBooks(
+    page: number = 1,
+    limit: number = 10,
+    search: string = "",
+    sort: "popular" | "recent" = "recent"
+)
 {
+    const user = await getCurrentUser()
     const skip = (page - 1) * limit
     const searchFilter = search
         ? {
@@ -72,6 +79,76 @@ export async function getPublicBooks(page: number = 1, limit: number = 10, searc
           }
         : {}
 
+    // For popular sort, we need to use a different approach since Prisma doesn't support
+    // direct orderBy on _count. We'll fetch all matching books, sort in memory, then paginate.
+    // For large datasets, consider using raw SQL or a materialized view.
+    if (sort === "popular")
+    {
+        // Get all matching books with likes count
+        const allBooks = await prisma.book.findMany({
+            where: {
+                isPublic: true,
+                ...searchFilter,
+            },
+            include: {
+                owner: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                    },
+                },
+                ...(user
+                    ? {
+                          likes: {
+                              where: {
+                                  userId: user.id,
+                              },
+                              select: {
+                                  id: true,
+                              },
+                          },
+                      }
+                    : {}),
+            },
+        })
+
+        // Sort by likes count (descending), then by createdAt (descending) as tiebreaker
+        allBooks.sort((a, b) => {
+            const likesDiff = b._count.likes - a._count.likes
+            if (likesDiff !== 0)
+            {
+                return likesDiff
+            }
+            return b.createdAt.getTime() - a.createdAt.getTime()
+        })
+
+        // Paginate
+        const total = allBooks.length
+        const books = allBooks.slice(skip, skip + limit)
+
+        // Transform books to include likesCount and likedByMe
+        const booksWithLikes = books.map((book) => ({
+            ...book,
+            likesCount: book._count.likes,
+            likedByMe: user ? book.likes && book.likes.length > 0 : false,
+            likes: undefined, // Remove likes array from response
+            _count: undefined, // Remove _count from response
+        }))
+
+        return {
+            books: booksWithLikes,
+            total,
+            totalPages: Math.ceil(total / limit),
+        }
+    }
+
+    // For recent sort, use standard Prisma orderBy
     const [books, total] = await Promise.all([
         prisma.book.findMany({
             where: {
@@ -86,9 +163,26 @@ export async function getPublicBooks(page: number = 1, limit: number = 10, searc
                         email: true,
                     },
                 },
+                _count: {
+                    select: {
+                        likes: true,
+                    },
+                },
+                ...(user
+                    ? {
+                          likes: {
+                              where: {
+                                  userId: user.id,
+                              },
+                              select: {
+                                  id: true,
+                              },
+                          },
+                      }
+                    : {}),
             },
             orderBy: {
-                createdAt: "desc",
+                createdAt: "desc" as const,
             },
             skip,
             take: limit,
@@ -101,8 +195,17 @@ export async function getPublicBooks(page: number = 1, limit: number = 10, searc
         }),
     ])
 
+    // Transform books to include likesCount and likedByMe
+    const booksWithLikes = books.map((book) => ({
+        ...book,
+        likesCount: book._count.likes,
+        likedByMe: user ? book.likes && book.likes.length > 0 : false,
+        likes: undefined, // Remove likes array from response
+        _count: undefined, // Remove _count from response
+    }))
+
     return {
-        books,
+        books: booksWithLikes,
         total,
         totalPages: Math.ceil(total / limit),
     }
