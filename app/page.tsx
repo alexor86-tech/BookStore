@@ -1,192 +1,90 @@
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/auth-server'
-import Link from 'next/link'
-import type { Note } from '@prisma/client'
+import { getCurrentUser } from "@/lib/auth-server"
+import { getRecentPublicBooks, getPopularPublicBooks } from "@/lib/queries/books"
+import { HomeBookCard } from "@/components/home/book-card"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Plus } from "lucide-react"
 
-async function getNotes()
-{
-    try
-    {
-        const notes = await prisma.note.findMany({
-            orderBy: {
-                createdAt: 'desc',
-            },
-        })
-        return notes
-    }
-    catch (error)
-    {
-        console.error('Error fetching notes:', error)
-        return []
-    }
-}
-
+/**
+ * Home page with hero section and two book sections
+ * @returns {Promise<JSX.Element>} Home page
+ */
 export default async function Home()
 {
-    const notes = await getNotes()
     const user = await getCurrentUser()
+    const [recentBooks, popularBooks] = await Promise.all([
+        getRecentPublicBooks(20),
+        getPopularPublicBooks(20),
+    ])
 
     return (
-        <main style={{
-            minHeight: '100vh',
-            padding: '2rem',
-            maxWidth: '1200px',
-            margin: '0 auto',
-        }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '2rem',
-            }}>
-                <h1 style={{
-                    fontSize: '2.5rem',
-                    color: '#333',
-                    margin: 0,
-                }}>
-                    BookStore
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Hero Section */}
+            <section className="text-center py-12 md:py-16 lg:py-20 mb-12">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+                    Добро пожаловать в BookStore
                 </h1>
-                <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    alignItems: 'center',
-                }}>
-                    {user ? (
-                        <>
-                            <Link
-                                href="/dashboard"
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    fontSize: '1rem',
-                                    backgroundColor: '#10b981',
-                                    color: 'white',
-                                    textDecoration: 'none',
-                                    borderRadius: '6px',
-                                    fontWeight: 'bold',
-                                }}
-                            >
-                                Личный кабинет
-                            </Link>
-                            <span style={{
-                                fontSize: '0.9rem',
-                                color: '#666',
-                            }}>
-                                {user.name || user.email}
-                            </span>
-                        </>
-                    ) : (
-                        <Link
-                            href="/login"
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                fontSize: '1rem',
-                                backgroundColor: '#4285f4',
-                                color: 'white',
-                                textDecoration: 'none',
-                                borderRadius: '6px',
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            Войти
-                        </Link>
-                    )}
-                    <a
-                        href="/view-db"
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            fontSize: '1rem',
-                            backgroundColor: '#0070f3',
-                            color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: '6px',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        Database Viewer
-                    </a>
-                </div>
-            </div>
-
-            <div style={{
-                marginBottom: '2rem',
-                padding: '1rem',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '8px',
-            }}>
-                <h2 style={{
-                    fontSize: '1.5rem',
-                    marginBottom: '1rem',
-                    color: '#555',
-                }}>
-                    Notes from Database
-                </h2>
-
-                {notes.length === 0 ? (
-                    <p style={{ color: '#888' }}>
-                        No notes found. Run &quot;npm run db:seed&quot; to add sample data.
-                    </p>
-                ) : (
-                    <ul style={{
-                        listStyle: 'none',
-                        display: 'grid',
-                        gap: '1rem',
-                    }}>
-                        {notes.map((note: Note) => (
-                            <li
-                                key={note.id}
-                                style={{
-                                    padding: '1rem',
-                                    backgroundColor: 'white',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                }}
-                            >
-                                <h3 style={{
-                                    fontSize: '1.2rem',
-                                    marginBottom: '0.5rem',
-                                    color: '#333',
-                                }}>
-                                    {note.title}
-                                </h3>
-                                <p style={{
-                                    fontSize: '0.9rem',
-                                    color: '#888',
-                                }}>
-                                    Created: {new Date(note.createdAt).toLocaleString()}
-                                </p>
-                                <p style={{
-                                    fontSize: '0.8rem',
-                                    color: '#aaa',
-                                    fontFamily: 'monospace',
-                                    marginTop: '0.5rem',
-                                }}>
-                                    ID: {note.id}
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-
-            <div style={{
-                marginTop: '2rem',
-                padding: '1rem',
-                backgroundColor: '#e8f4f8',
-                borderRadius: '8px',
-            }}>
-                <h3 style={{
-                    fontSize: '1.2rem',
-                    marginBottom: '0.5rem',
-                    color: '#555',
-                }}>
-                    Database Status
-                </h3>
-                <p style={{ color: '#666' }}>
-                    {notes.length > 0
-                        ? `✓ Connected to NeonDB. Found ${notes.length} note(s).`
-                        : '⚠ Database connection successful, but no notes found.'}
+                <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Откройте для себя удивительный мир книг. Читайте, делитесь и находите
+                    вдохновение в произведениях других авторов.
                 </p>
-            </div>
-        </main>
+                {user ? (
+                    <Link href="/dashboard">
+                        <Button size="lg" className="gap-2">
+                            <Plus className="w-5 h-5" />
+                            Добавить книгу
+                        </Button>
+                    </Link>
+                ) : (
+                    <div className="flex flex-col items-center gap-2">
+                        <Link href="/login">
+                            <Button size="lg" className="gap-2">
+                                <Plus className="w-5 h-5" />
+                                Добавить книгу
+                            </Button>
+                        </Link>
+                        <p className="text-sm text-gray-500">
+                            Войдите, чтобы добавлять книги
+                        </p>
+                    </div>
+                )}
+            </section>
+
+            {/* Recent Books Section */}
+            <section className="mb-16">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                    Новые книги
+                </h2>
+                {recentBooks.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        <p className="text-lg">Пока нет новых книг</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {recentBooks.map((book) => (
+                            <HomeBookCard key={book.id} book={book} />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* Popular Books Section */}
+            <section className="mb-16">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                    Популярные книги
+                </h2>
+                {popularBooks.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        <p className="text-lg">Пока нет популярных книг</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {popularBooks.map((book) => (
+                            <HomeBookCard key={book.id} book={book} />
+                        ))}
+                    </div>
+                )}
+            </section>
+        </div>
     )
 }

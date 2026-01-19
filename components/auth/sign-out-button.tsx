@@ -1,6 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
+import { Button } from "@/components/ui/button"
 
 /**
  * Sign out button component
@@ -14,27 +15,12 @@ export function SignOutButton()
     }
 
     return (
-        <button
+        <Button
             onClick={handleSignOut}
-            style={{
-                padding: "0.5rem 1rem",
-                fontSize: "0.9rem",
-                backgroundColor: "#dc2626",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "500",
-                transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#b91c1c"
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#dc2626"
-            }}
+            variant="outline"
+            size="sm"
         >
             Выйти
-        </button>
+        </Button>
     )
 }

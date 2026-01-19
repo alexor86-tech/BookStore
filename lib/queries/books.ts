@@ -98,6 +98,16 @@ export async function getPublicBooks(
                         email: true,
                     },
                 },
+                tags: {
+                    include: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
                 _count: {
                     select: {
                         likes: true,
@@ -161,6 +171,16 @@ export async function getPublicBooks(
                         id: true,
                         name: true,
                         email: true,
+                    },
+                },
+                tags: {
+                    include: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
                     },
                 },
                 _count: {
@@ -269,5 +289,214 @@ export async function getFavoriteBooks(page: number = 1, limit: number = 10, sea
         books,
         total,
         totalPages: Math.ceil(total / limit),
+    }
+}
+
+/**
+ * Get recent public books for home page
+ * @param {number} limit - Maximum number of books to return (default: 20)
+ * @returns {Promise<any[]>} Array of recent books with tags and likes
+ */
+export async function getRecentPublicBooks(limit: number = 20)
+{
+    const user = await getCurrentUser()
+
+    const books = await prisma.book.findMany({
+        where: {
+            isPublic: true,
+        },
+        include: {
+            owner: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+            tags: {
+                include: {
+                    tag: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                },
+            },
+            ...(user
+                ? {
+                      likes: {
+                          where: {
+                              userId: user.id,
+                          },
+                          select: {
+                              id: true,
+                          },
+                      },
+                  }
+                : {}),
+        },
+        orderBy: {
+            createdAt: "desc" as const,
+        },
+        take: limit,
+    })
+
+    // Transform books to include likesCount and likedByMe
+    return books.map((book) => ({
+        ...book,
+        likesCount: book._count.likes,
+        likedByMe: user ? book.likes && book.likes.length > 0 : false,
+        likes: undefined,
+        _count: undefined,
+    }))
+}
+
+/**
+ * Get popular public books for home page
+ * @param {number} limit - Maximum number of books to return (default: 20)
+ * @returns {Promise<any[]>} Array of popular books with tags and likes
+ */
+export async function getPopularPublicBooks(limit: number = 20)
+{
+    const user = await getCurrentUser()
+
+    // Get all public books with likes count
+    const allBooks = await prisma.book.findMany({
+        where: {
+            isPublic: true,
+        },
+        include: {
+            owner: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+            tags: {
+                include: {
+                    tag: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                },
+            },
+            ...(user
+                ? {
+                      likes: {
+                          where: {
+                              userId: user.id,
+                          },
+                          select: {
+                              id: true,
+                          },
+                      },
+                  }
+                : {}),
+        },
+    })
+
+    // Sort by likes count (descending), then by createdAt (descending) as tiebreaker
+    allBooks.sort((a, b) => {
+        const likesDiff = b._count.likes - a._count.likes
+        if (likesDiff !== 0)
+        {
+            return likesDiff
+        }
+        return b.createdAt.getTime() - a.createdAt.getTime()
+    })
+
+    // Take top N
+    const books = allBooks.slice(0, limit)
+
+    // Transform books to include likesCount and likedByMe
+    return books.map((book) => ({
+        ...book,
+        likesCount: book._count.likes,
+        likedByMe: user ? book.likes && book.likes.length > 0 : false,
+        likes: undefined,
+        _count: undefined,
+    }))
+}
+
+/**
+ * Get a single public book by ID
+ * @param {string} bookId - Book ID
+ * @returns {Promise<any | null>} Book object or null if not found or not public
+ */
+export async function getPublicBookById(bookId: string)
+{
+    const user = await getCurrentUser()
+
+    const book = await prisma.book.findUnique({
+        where: { id: bookId },
+        include: {
+            owner: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+            tags: {
+                include: {
+                    tag: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                },
+            },
+            ...(user
+                ? {
+                      likes: {
+                          where: {
+                              userId: user.id,
+                          },
+                          select: {
+                              id: true,
+                          },
+                      },
+                  }
+                : {}),
+        },
+    })
+
+    // Only return public books (or private books if user is owner)
+    if (!book)
+    {
+        return null
+    }
+
+    if (!book.isPublic && (!user || book.ownerId !== user.id))
+    {
+        return null
+    }
+
+    return {
+        ...book,
+        likesCount: book._count.likes,
+        likedByMe: user ? book.likes && book.likes.length > 0 : false,
+        likes: undefined,
+        _count: undefined,
     }
 }
