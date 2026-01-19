@@ -119,7 +119,7 @@ export async function getPublicBooks(
         })
 
         // Sort by likes count (descending), then by createdAt (descending) as tiebreaker
-        allBooks.sort((a, b) => {
+        allBooks.sort((a: typeof allBooks[0], b: typeof allBooks[0]) => {
             const likesDiff = b._count.likes - a._count.likes
             if (likesDiff !== 0)
             {
