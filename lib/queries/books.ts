@@ -133,7 +133,7 @@ export async function getPublicBooks(
         const books = allBooks.slice(skip, skip + limit)
 
         // Transform books to include likesCount and likedByMe
-        const booksWithLikes = books.map((book) => ({
+        const booksWithLikes = books.map((book: typeof books[0]) => ({
             ...book,
             likesCount: book._count.likes,
             likedByMe: user ? book.likes && book.likes.length > 0 : false,
@@ -196,7 +196,7 @@ export async function getPublicBooks(
     ])
 
     // Transform books to include likesCount and likedByMe
-    const booksWithLikes = books.map((book) => ({
+    const booksWithLikes = books.map((book: typeof books[0]) => ({
         ...book,
         likesCount: book._count.likes,
         likedByMe: user ? book.likes && book.likes.length > 0 : false,
