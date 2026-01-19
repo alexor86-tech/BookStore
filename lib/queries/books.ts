@@ -348,7 +348,7 @@ export async function getRecentPublicBooks(limit: number = 20)
     })
 
     // Transform books to include likesCount and likedByMe
-    return books.map((book) => ({
+    return books.map((book: typeof books[0]) => ({
         ...book,
         likesCount: book._count.likes,
         likedByMe: user ? book.likes && book.likes.length > 0 : false,
@@ -423,7 +423,7 @@ export async function getPopularPublicBooks(limit: number = 20)
     const books = allBooks.slice(0, limit)
 
     // Transform books to include likesCount and likedByMe
-    return books.map((book) => ({
+    return books.map((book: typeof books[0]) => ({
         ...book,
         likesCount: book._count.likes,
         likedByMe: user ? book.likes && book.likes.length > 0 : false,
