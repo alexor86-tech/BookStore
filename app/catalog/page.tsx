@@ -74,7 +74,25 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps)
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                        {books.map((book) => (
+                        {books.map((book: {
+                            id: string
+                            title: string
+                            description: string | null
+                            createdAt: Date
+                            owner: {
+                                id: string
+                                name: string | null
+                                email: string
+                            }
+                            tags?: Array<{
+                                tag: {
+                                    id: string
+                                    name: string
+                                }
+                            }>
+                            likesCount?: number
+                            likedByMe?: boolean
+                        }) => (
                             <HomeBookCard key={book.id} book={book} />
                         ))}
                     </div>
